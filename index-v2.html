@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NaijaContentAI</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, serif;
+    background: linear-gradient(160deg, #080808 0%, #120800 60%, #080808 100%);
+    color: #f0ece0;
+    min-height: 100vh;
+  }
+  .container { max-width: 660px; margin: 0 auto; padding: 24px 20px; }
+  .center { text-align: center; }
+  .tagline { font-size: 12px; letter-spacing: 3px; color: #c8922a; text-transform: uppercase; margin-bottom: 12px; }
+  .hero { font-size: clamp(2.2rem, 7vw, 3.8rem); font-weight: 900; margin: 0 0 12px; background: linear-gradient(135deg, #e8b84b, #f5d98a, #c8922a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; text-align: center; }
+  .sub { color: #777; font-size: 15px; line-height: 1.6; margin-bottom: 32px; max-width: 460px; margin-left: auto; margin-right: auto; }
+  .card { background: #0f0f0f; border: 1px solid #1e1e1e; border-radius: 16px; padding: 28px 24px; text-align: left; max-width: 440px; margin: 0 auto; }
+  .input { width: 100%; background: #080808; border: 1px solid #1e1e1e; border-radius: 10px; padding: 14px 16px; color: #f0ece0; font-size: 15px; font-family: inherit; outline: none; box-sizing: border-box; margin-bottom: 12px; }
+  .btn-primary { width: 100%; padding: 16px; background: linear-gradient(135deg, #c8922a, #e8b84b); border: none; border-radius: 12px; color: #000; font-size: 15px; font-weight: 800; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; }
+  .btn-primary:disabled { background: #1a1a1a; color: #333; cursor: not-allowed; }
+  .plans-preview { display: flex; gap: 10px; margin-top: 32px; justify-content: center; flex-wrap: wrap; }
+  .plan-chip { background: #0f0f0f; border-radius: 10px; padding: 12px 18px; min-width: 130px; }
+  .plan-chip-name { font-weight: 700; font-size: 14px; }
+  .plan-chip-price { color: #888; font-size: 12px; }
+  .plan-chip-limit { color: #555; font-size: 11px; margin-top: 4px; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid #111; background: #050505; position: sticky; top: 0; z-index: 10; }
+  .topbar-title { font-weight: 800; font-size: 16px; color: #e8b84b; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .upgrade-btn { background: linear-gradient(135deg, #c8922a, #e8b84b); border: none; border-radius: 20px; color: #000; font-size: 11px; font-weight: 800; padding: 5px 14px; cursor: pointer; letter-spacing: 1px; }
+
+  .section { margin-bottom: 24px; }
+  .section-label { display: block; font-size: 10px; letter-spacing: 3px; color: #c8922a; text-transform: uppercase; margin-bottom: 10px; }
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-btn { padding: 13px; border-radius: 10px; font-size: 13px; cursor: pointer; border: 1px solid #1e1e1e; background: #0f0f0f; color: #777; text-align: center; }
+  .type-btn.active { background: linear-gradient(135deg, #c8922a, #e8b84b); border: none; color: #000; font-weight: 700; }
+  .type-btn.locked { color: #333; cursor: not-allowed; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  .opt-btn { width: 100%; padding: 9px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; text-align: left; border: 1px solid #1e1e1e; background: #0f0f0f; color: #666; margin-bottom: 8px; display: block; }
+  .opt-btn.active-platform { background: #c8922a; border: none; color: #000; font-weight: 700; }
+  .opt-btn.active-tone { background: #1a0f00; border: 1px solid #c8922a; color: #e8b84b; }
+
+  textarea.topic-input { width: 100%; background: #0a0a0a; border: 1px solid #1e1e1e; border-radius: 12px; padding: 14px 16px; color: #f0ece0; font-size: 14px; font-family: inherit; resize: vertical; outline: none; box-sizing: border-box; line-height: 1.6; }
+
+  .result-box { background: #0a0a0a; border: 1px solid #1e1e1e; border-left: 3px solid #c8922a; border-radius: 12px; padding: 20px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: #e0d8c8; margin-top: 10px; }
+  .ghost-btn { padding: 7px 16px; background: transparent; border: 1px solid #1e1e1e; border-radius: 20px; color: #555; cursor: pointer; font-size: 12px; }
+  .error-box { margin-top: 14px; padding: 14px; background: #1a0000; border: 1px solid #440000; border-radius: 10px; color: #ff6666; font-size: 13px; }
+
+  .footer-note { margin-top: 40px; text-align: center; font-size: 11px; color: #222; border-top: 1px solid #111; padding-top: 16px; }
+
+  .plan-card { background: #0f0f0f; border: 1px solid #1e1e1e; border-radius: 14px; padding: 20px 24px; position: relative; margin-bottom: 16px; }
+  .plan-card.featured { border-color: #c8922a; background: #1a0f00; }
+  .plan-badge { position: absolute; top: 12px; right: 16px; color: #000; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; }
+  .back-btn { background: transparent; border: 1px solid #1e1e1e; border-radius: 20px; color: #666; cursor: pointer; font-size: 13px; padding: 7px 16px; margin-bottom: 24px; display: inline-block; }
+  .usage-bar-track { background: #111; border-radius: 4px; height: 4px; overflow: hidden; }
+  .usage-bar-fill { height: 100%; border-radius: 4px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="landing" class="container center">
+  <div class="tagline">🇳🇬 For Nigerian Creators</div>
+  <h1 class="hero">Naija<span style="color:#e8b84b;">Content</span>AI</h1>
+  <p class="sub">Generate fire captions, scripts &amp; hashtags for Facebook, TikTok &amp; Instagram — in seconds.</p>
+  <div class="card">
+    <p style="color:#c8922a;font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">Get Started Free</p>
+    <input type="email" id="emailInput" placeholder="Enter your email address" class="input" />
+    <button id="startBtn" class="btn-primary">Start Creating Free ⚡</button>
+    <p style="color:#444;font-size:12px;margin-top:12px;">5 free generations • No credit card needed</p>
+  </div>
+  <div class="plans-preview">
+    <div class="plan-chip"><div class="plan-chip-name" style="color:#444;">Free</div><div class="plan-chip-price">₦0 / month</div><div class="plan-chip-limit">5 gen/mo</div></div>
+    <div class="plan-chip"><div class="plan-chip-name" style="color:#c8922a;">Creator</div><div class="plan-chip-price">₦2,500 / month</div><div class="plan-chip-limit">100 gen/mo</div></div>
+    <div class="plan-chip"><div class="plan-chip-name" style="color:#e8b84b;">Pro</div><div class="plan-chip-price">₦6,000 / month</div><div class="plan-chip-limit">Unlimited</div></div>
+  </div>
+</div>
+
+<div id="upgrade" class="container hidden">
+  <button id="backFromUpgrade" class="back-btn">← Back</button>
+  <h2 class="hero" style="font-size:2rem;margin-bottom:8px;">Choose Your Plan</h2>
+  <p style="color:#666;text-align:center;margin-bottom:32px;font-size:14px;">Unlock more generations and content types</p>
+  <div id="planCards"></div>
+  <p style="text-align:center;color:#333;font-size:12px;margin-top:24px;">Payments secured by Paystack 🔒 • Cancel anytime</p>
+</div>
+
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="topbar-title">NaijaContentAI</div>
+    <div class="topbar-right">
+      <div id="remainingText" style="font-size:12px;color:#666;"></div>
+      <div id="planPill" class="pill"></div>
+      <button id="upgradeTopBtn" class="upgrade-btn">Upgrade ↑</button>
+    </div>
+  </div>
+  <div class="container">
+    <div id="usageBarWrap" class="section" style="margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#555;margin-bottom:6px;">
+        <span>Generations used this month</span><span id="usageText"></span>
+      </div>
+      <div class="usage-bar-track"><div id="usageBarFill" class="usage-bar-fill"></div></div>
+    </div>
+
+    <div class="section">
+      <label class="section-label">What do you need?</label>
+      <div class="type-grid" id="typeGrid"></div>
+      <p id="lockNote" class="hidden" style="color:#444;font-size:11px;margin-top:8px;text-align:center;">🔒 Scripts, Hashtags &amp; Week Ideas require Creator plan — <span id="lockUpgradeLink" style="color:#c8922a;cursor:pointer;">Upgrade</span></p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <label class="section-label">Platform</label>
+        <div id="platformGroup"></div>
+      </div>
+      <div>
+        <label class="section-label">Tone</label>
+        <div id="toneGroup"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <label class="section-label">Your Topic</label>
+      <textarea id="topicInput" class="topic-input" rows="3" placeholder="e.g. 'Adulting in Nigeria is not easy', 'Lagos traffic wahala'..."></textarea>
+    </div>
+
+    <div id="generateArea"></div>
+    <div id="errorArea"></div>
+    <div id="resultArea"></div>
+
+    <div class="footer-note">NaijaContentAI • Built for Nigerian Creators 🇳🇬</div>
+  </div>
+</div>
+
+<script>
+const PLANS = {
+  free:    { id: "free", name: "Free", price: 0, label: "₦0 / month", limit: 5, badge: null, color: "#444", perks: ["5 generations/month", "Captions only", "All platforms"] },
+  creator: { id: "creator", name: "Creator", price: 250000, label: "₦2,500 / month", limit: 100, badge: "Most Popular", color: "#c8922a", perks: ["100 generations/month", "All content types", "All platforms", "Priority speed"] },
+  pro:     { id: "pro", name: "Pro", price: 600000, label: "₦6,000 / month", limit: Infinity, badge: "Best Value", color: "#e8b84b", perks: ["Unlimited generations", "All content types", "All platforms", "Priority speed", "Early access"] },
+};
+
+const CONTENT_TYPES = [
+  { id: "caption", label: "📝 Caption", free: true },
+  { id: "script", label: "🎬 Reel Script", free: false },
+  { id: "hashtags", label: "#️⃣ Hashtags", free: false },
+  { id: "week_ideas", label: "📅 Week Ideas", free: false },
+];
+
+const TONES = ["Funny 😂", "Motivational 💪", "Relatable 😅", "Informative 📚", "Trendy 🔥"];
+const PLATFORMS = ["Facebook", "TikTok", "Instagram"];
+
+const SYSTEM_PROMPT = "You are NaijaContentAI, an expert social media content creator specializing in Nigerian and African content for Facebook, TikTok, and Instagram. Generate engaging, culturally relevant content. Use Nigerian expressions, Pidgin English where appropriate. Be energetic and use emojis naturally. Respond ONLY with the requested content — no preamble.";
+
+let state = {
+  plan: "free", usage: 0, email: "",
+  contentType: "caption", tone: TONES[0], platform: PLATFORMS[0],
+  result: "", loading: false,
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem("naija_ai_user");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.plan = parsed.plan || "free";
+      state.usage = parsed.usage || 0;
+      state.email = parsed.em || "";
+    }
+  } catch (e) {}
+}
+function saveState() {
+  try { localStorage.setItem("naija_ai_user", JSON.stringify({ plan: state.plan, usage: state.usage, em: state.email })); } catch (e) {}
+}
+
+function showScreen(name) {
+  document.getElementById("landing").classList.add("hidden");
+  document.getElementById("upgrade").classList.add("hidden");
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById(name).classList.remove("hidden");
+}
+
+function renderApp() {
+  const plan = PLANS[state.plan];
+  const remaining = plan.limit === Infinity ? "∞" : Math.max(0, plan.limit - state.usage);
+
+  document.getElementById("remainingText").textContent = remaining === "∞" ? "∞ left" : (remaining + "/" + plan.limit + " left");
+
+  const pill = document.getElementById("planPill");
+  pill.textContent = plan.name;
+  pill.style.background = plan.color + "22";
+  pill.style.border = "1px solid " + plan.color + "44";
+  pill.style.color = plan.color;
+
+  document.getElementById("upgradeTopBtn").style.display = state.plan === "pro" ? "none" : "inline-block";
+
+  const usageWrap = document.getElementById("usageBarWrap");
+  if (plan.limit === Infinity) {
+    usageWrap.classList.add("hidden");
+  } else {
+    usageWrap.classList.remove("hidden");
+    document.getElementById("usageText").textContent = state.usage + " / " + plan.limit;
+    const pct = Math.min(100, (state.usage / plan.limit) * 100);
+    const fill = document.getElementById("usageBarFill");
+    fill.style.width = pct + "%";
+    fill.style.background = state.usage >= plan.limit ? "#cc3333" : "linear-gradient(90deg, " + plan.color + ", #e8b84b)";
+  }
+
+  const typeGrid = document.getElementById("typeGrid");
+  typeGrid.innerHTML = "";
+  CONTENT_TYPES.forEach(function(ct) {
+    const locked = state.plan === "free" && !ct.free;
+    const btn = document.createElement("button");
+    btn.className = "type-btn" + (state.contentType === ct.id ? " active" : "") + (locked ? " locked" : "");
+    btn.innerHTML = ct.label + (locked ? ' <span style="font-size:11px;">🔒</span>' : "");
+    btn.onclick = function() { if (!locked) { state.contentType = ct.id; renderApp(); } };
+    typeGrid.appendChild(btn);
+  });
+  document.getElementById("lockNote").classList.toggle("hidden", state.plan !== "free");
+
+  const platformGroup = document.getElementById("platformGroup");
+  platformGroup.innerHTML = "";
+  PLATFORMS.forEach(function(p) {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn" + (state.platform === p ? " active-platform" : "");
+    btn.textContent = p;
+    btn.onclick = function() { state.platform = p; renderApp(); };
+    platformGroup.appendChild(btn);
+  });
+
+  const toneGroup = document.getElementById("toneGroup");
+  toneGroup.innerHTML = "";
+  TONES.forEach(function(t) {
+    const btn = document.createElement("button");
+    btn.className = "opt-btn" + (state.tone === t ? " active-tone" : "");
+    btn.textContent = t;
+    btn.onclick = function() { state.tone = t; renderApp(); };
+    toneGroup.appendChild(btn);
+  });
+
+  const canGenerate = plan.limit === Infinity || state.usage < plan.limit;
+  const canUseType = state.plan !== "free" || state.contentType === "caption";
+  const genArea = document.getElementById("generateArea");
+  genArea.innerHTML = "";
+
+  if (!canGenerate) {
+    genArea.innerHTML = '<div style="text-align:center;"><div style="color:#cc5533;margin-bottom:12px;font-size:14px;">You have used all your ' + plan.limit + ' free generations this month.</div></div>';
+    const upBtn = document.createElement("button");
+    upBtn.className = "btn-primary";
+    upBtn.textContent = "Upgrade to Keep Creating 🚀";
+    upBtn.onclick = function() { showScreen("upgrade"); renderUpgrade(); };
+    genArea.appendChild(upBtn);
+  } else {
+    const btn = document.createElement("button");
+    btn.className = "btn-primary";
+    btn.id = "generateBtn";
+    btn.textContent = state.loading ? "✨ Generating..." : "⚡ Generate Content";
+    const topicVal = document.getElementById("topicInput").value.trim();
+    btn.disabled = state.loading || !topicVal || !canUseType;
+    btn.onclick = generate;
+    genArea.appendChild(btn);
+  }
+
+  document.getElementById("errorArea").innerHTML = "";
+  renderResult();
+}
+
+function renderResult() {
+  const resultArea = document.getElementById("resultArea");
+  resultArea.innerHTML = "";
+  if (!state.result) return;
+
+  const wrap = document.createElement("div");
+  wrap.style.marginTop = "28px";
+
+  const header = document.createElement("div");
+  header.style.display = "flex";
+  header.style.justifyContent = "space-between";
+  header.style.alignItems = "center";
+  header.style.marginBottom = "10px";
+
+  const label = document.createElement("span");
+  label.className = "section-label";
+  label.style.marginBottom = "0";
+  label.textContent = "Your Content";
+
+  const btnGroup = document.createElement("div");
+  btnGroup.style.display = "flex";
+  btnGroup.style.gap = "8px";
+
+  const clearBtn = document.createElement("button");
+  clearBtn.className = "ghost-btn";
+  clearBtn.textContent = "Clear";
+  clearBtn.onclick = function() { state.result = ""; document.getElementById("topicInput").value = ""; renderApp(); };
+
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "ghost-btn";
+  copyBtn.textContent = "Copy";
+  copyBtn.onclick = function() {
+    navigator.clipboard.writeText(state.result).then(function() {
+      copyBtn.textContent = "✓ Copied!";
+      copyBtn.style.borderColor = "#4a8a4a";
+      copyBtn.style.color = "#6aaa6a";
+      setTimeout(function() { copyBtn.textContent = "Copy"; copyBtn.style.borderColor = "#1e1e1e"; copyBtn.style.color = "#666"; }, 2000);
+    });
+  };
+
+  btnGroup.appendChild(clearBtn);
+  btnGroup.appendChild(copyBtn);
+  header.appendChild(label);
+  header.appendChild(btnGroup);
+
+  const box = document.createElement("div");
+  box.className = "result-box";
+  box.textContent = state.result;
+
+  const regenBtn = document.createElement("button");
+  regenBtn.className = "ghost-btn";
+  regenBtn.style.width = "100%";
+  regenBtn.style.marginTop = "10px";
+  regenBtn.style.padding = "12px";
+  regenBtn.textContent = "🔄 Regenerate";
+  regenBtn.onclick = generate;
+
+  wrap.appendChild(header);
+  wrap.appendChild(box);
+  wrap.appendChild(regenBtn);
+  resultArea.appendChild(wrap);
+}
+
+async function generate() {
+  const topicInput = document.getElementById("topicInput");
+  const topic = topicInput.value.trim();
+  const plan = PLANS[state.plan];
+  const canGenerate = plan.limit === Infinity || state.usage < plan.limit;
+  const canUseType = state.plan !== "free" || state.contentType === "caption";
+  if (!topic || !canGenerate || !canUseType) return;
+
+  state.loading = true;
+  state.result = "";
+  document.getElementById("errorArea").innerHTML = "";
+  renderApp();
+
+  const typePrompts = {
+    caption: 'Write a ' + state.tone + ' social media caption for ' + state.platform + ' about: "' + topic + '". Use Nigerian expressions naturally, 3-5 sentences, end with a call to action.',
+    script: 'Write a short ' + state.tone + ' Reel/TikTok script for ' + state.platform + ' about: "' + topic + '". HOOK (0-3 sec): MAIN CONTENT (3-25 sec): CALL TO ACTION (25-30 sec): Use Nigerian expressions.',
+    hashtags: 'Generate 20 hashtags for a ' + state.platform + ' post about: "' + topic + '" targeting Nigerian audiences. Group as: Trending | Nigerian | Niche',
+    week_ideas: 'Generate 7 content ideas for the week about: "' + topic + '" for a Nigerian ' + state.platform + ' creator with a ' + state.tone + ' tone. Format: Day + Title + One-line description.',
+  };
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: typePrompts[state.contentType] }],
+      }),
+    });
+    const data = await res.json();
+    const text = (data && data.content && data.content[0] && data.content[0].text) || "";
+    if (!text) throw new Error("empty");
+    state.result = text;
+    state.usage += 1;
+    saveState();
+  } catch (e) {
+    document.getElementById("errorArea").innerHTML = '<div class="error-box">Something went wrong. Please try again.</div>';
+  } finally {
+    state.loading = false;
+    renderApp();
+  }
+}
+
+function renderUpgrade() {
+  const wrap = document.getElementById("planCards");
+  wrap.innerHTML = "";
+  Object.values(PLANS).forEach(function(p) {
+    const card = document.createElement("div");
+    card.className = "plan-card" + (state.plan === p.id ? " featured" : "");
+    if (state.plan === p.id) card.style.borderColor = p.color;
+
+    let badgeHtml = "";
+    if (p.badge) badgeHtml = '<div class="plan-badge" style="background:' + p.color + ';">' + p.badge.toUpperCase() + '</div>';
+
+    let actionHtml = "";
+    if (state.plan === p.id) {
+      actionHtml = '<div style="color:#4a8a4a;font-size:13px;border:1px solid #4a8a4a;border-radius:20px;padding:6px 16px;">✓ Current Plan</div>';
+    } else if (p.id === "free") {
+      actionHtml = '<div style="color:#444;font-size:13px;">Default</div>';
+    } else {
+      actionHtml = '<button class="btn-primary upgrade-action" data-plan="' + p.id + '" style="width:auto;padding:10px 24px;font-size:14px;">Upgrade →</button>';
+    }
+
+    card.innerHTML =
+      badgeHtml +
+      '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">' +
+        '<div>' +
+          '<div style="color:' + p.color + ';font-size:20px;font-weight:800;">' + p.name + '</div>' +
+          '<div style="color:#aaa;font-size:15px;margin-top:2px;">' + p.label + '</div>' +
+        '</div>' +
+        actionHtml +
+      '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;">' +
+        p.perks.map(function(perk) { return '<span style="color:#666;font-size:12px;">✓ ' + perk + '</span>'; }).join("") +
+      '</div>';
+    wrap.appendChild(card);
+  });
+
+  document.querySelectorAll(".upgrade-action").forEach(function(btn) {
+    btn.onclick = function() { handleUpgrade(btn.getAttribute("data-plan")); };
+  });
+}
+
+function handleUpgrade(targetPlan) {
+  const PAYSTACK_PUBLIC_KEY = "YOUR_PAYSTACK_PUBLIC_KEY";
+  if (!window.PaystackPop) {
+    alert("Payment system loading... please try again in a moment.");
+    return;
+  }
+  const handler = window.PaystackPop.setup({
+    key: PAYSTACK_PUBLIC_KEY,
+    email: state.email,
+    amount: PLANS[targetPlan].price,
+    currency: "NGN",
+    ref: "naija_" + targetPlan + "_" + Date.now(),
+    metadata: { plan: targetPlan },
+    callback: function() {
+      state.plan = targetPlan;
+      state.usage = 0;
+      saveState();
+      showScreen("app");
+      renderApp();
+      alert("🎉 Payment successful! You're now on the " + PLANS[targetPlan].name + " plan.");
+    },
+    onClose: function() {},
+  });
+  handler.openIframe();
+}
+
+function init() {
+  loadState();
+
+  const script = document.createElement("script");
+  script.src = "https://js.paystack.co/v1/inline.js";
+  document.body.appendChild(script);
+
+  document.getElementById("startBtn").onclick = function() {
+    const val = document.getElementById("emailInput").value.trim();
+    if (!val.includes("@")) return;
+    state.email = val;
+    state.plan = "free";
+    state.usage = 0;
+    saveState();
+    showScreen("app");
+    renderApp();
+  };
+
+  document.getElementById("backFromUpgrade").onclick = function() { showScreen("app"); renderApp(); };
+  document.getElementById("upgradeTopBtn").onclick = function() { showScreen("upgrade"); renderUpgrade(); };
+  document.getElementById("lockUpgradeLink").onclick = function() { showScreen("upgrade"); renderUpgrade(); };
+
+  document.getElementById("topicInput").addEventListener("input", function() {
+    const btn = document.getElementById("generateBtn");
+    if (btn) {
+      const val = document.getElementById("topicInput").value.trim();
+      const plan = PLANS[state.plan];
+      const canGenerate = plan.limit === Infinity || state.usage < plan.limit;
+      const canUseType = state.plan !== "free" || state.contentType === "caption";
+      btn.disabled = state.loading || !val || !canUseType || !canGenerate;
+    }
+  });
+
+  if (state.email) {
+    showScreen("app");
+    renderApp();
+  } else {
+    showScreen("landing");
+  }
+}
+
+init();
+</script>
+</body>
+</html>
